@@ -1,7 +1,7 @@
 import { eq, desc, and, gte, lte } from 'drizzle-orm';
 import { db } from './index';
-import { workflows, products, analysisReports } from './schema';
-import type { NewWorkflow, NewProduct, NewAnalysisReport } from './schema';
+import { workflows, products, analysisReports, workflowExecutions } from './schema';
+import type { NewWorkflow, NewProduct, NewAnalysisReport, NewWorkflowExecution } from './schema';
 
 // Workflow operations
 export const workflowOperations = {
@@ -65,8 +65,6 @@ export const productOperations = {
     startDate?: Date;
     endDate?: Date;
   }) => {
-    let query = db.select().from(products);
-    
     const conditions = [];
     if (filters?.workflowId) {
       conditions.push(eq(products.workflowId, filters.workflowId));
@@ -78,11 +76,13 @@ export const productOperations = {
       conditions.push(lte(products.scrapedAt, filters.endDate));
     }
     
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
     
-    return await query.orderBy(desc(products.scrapedAt));
+    return await db
+      .select()
+      .from(products)
+      .where(whereClause)
+      .orderBy(desc(products.scrapedAt));
   },
 
   // Get product by ID
@@ -119,8 +119,6 @@ export const analysisOperations = {
     startDate?: Date;
     endDate?: Date;
   }) => {
-    let query = db.select().from(analysisReports);
-    
     const conditions = [];
     if (filters?.workflowId) {
       conditions.push(eq(analysisReports.workflowId, filters.workflowId));
@@ -132,11 +130,13 @@ export const analysisOperations = {
       conditions.push(lte(analysisReports.analyzedAt, filters.endDate));
     }
     
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
     
-    return await query.orderBy(desc(analysisReports.analyzedAt));
+    return await db
+      .select()
+      .from(analysisReports)
+      .where(whereClause)
+      .orderBy(desc(analysisReports.analyzedAt));
   },
 
   // Get analysis report by ID
@@ -159,16 +159,105 @@ export const analysisOperations = {
 };
 
 // Parse JSON content from analysis reports
-export function parseAnalysisContent(content: string): any {
-  try {
-    return JSON.parse(content);
-  } catch (error) {
-    console.error('Failed to parse analysis content:', error);
-    return null;
-  }
+// Note: With the new schema, content is stored as JSON type, so no parsing needed
+export function parseAnalysisContent(content: any): any {
+  // Content is already parsed when retrieved from database
+  return content;
 }
 
-// Format analysis content to JSON string
-export function formatAnalysisContent(content: any): string {
-  return JSON.stringify(content);
+// Format analysis content to JSON (for compatibility)
+// Note: With the new schema, content is stored as JSON type, so no stringification needed
+export function formatAnalysisContent(content: any): any {
+  return content;
 }
+
+// Workflow Execution operations
+export const workflowExecutionOperations = {
+  // Get all workflow executions with optional filtering
+  getAll: async (filters?: {
+    workflowId?: number;
+    status?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }) => {
+    const conditions = [];
+    if (filters?.workflowId) {
+      conditions.push(eq(workflowExecutions.workflowId, filters.workflowId));
+    }
+    if (filters?.status) {
+      conditions.push(eq(workflowExecutions.status, filters.status));
+    }
+    if (filters?.startDate) {
+      conditions.push(gte(workflowExecutions.startedAt, filters.startDate));
+    }
+    if (filters?.endDate) {
+      conditions.push(lte(workflowExecutions.startedAt, filters.endDate));
+    }
+    
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    return await db
+      .select()
+      .from(workflowExecutions)
+      .where(whereClause)
+      .orderBy(desc(workflowExecutions.startedAt));
+  },
+
+  // Get workflow execution by ID
+  getById: async (id: number) => {
+    const result = await db.select().from(workflowExecutions).where(eq(workflowExecutions.id, id));
+    return result[0];
+  },
+
+  // Create new workflow execution
+  create: async (data: NewWorkflowExecution) => {
+    const result = await db.insert(workflowExecutions).values(data).returning();
+    return result[0];
+  },
+
+  // Update workflow execution
+  update: async (id: number, data: Partial<NewWorkflowExecution>) => {
+    const result = await db
+      .update(workflowExecutions)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(workflowExecutions.id, id))
+      .returning();
+    return result[0];
+  },
+
+  // Mark execution as completed
+  markCompleted: async (id: number, productsProcessed: number = 0) => {
+    const result = await db
+      .update(workflowExecutions)
+      .set({ 
+        status: 'completed', 
+        completedAt: new Date(),
+        productsProcessed,
+        updatedAt: new Date() 
+      })
+      .where(eq(workflowExecutions.id, id))
+      .returning();
+    return result[0];
+  },
+
+  // Mark execution as failed
+  markFailed: async (id: number, error: string) => {
+    const result = await db
+      .update(workflowExecutions)
+      .set({ 
+        status: 'failed', 
+        completedAt: new Date(),
+        error,
+        updatedAt: new Date() 
+      })
+      .where(eq(workflowExecutions.id, id))
+      .returning();
+    return result[0];
+  },
+
+  // Delete workflow execution
+  delete: async (id: number) => {
+    const result = await db.delete(workflowExecutions).where(eq(workflowExecutions.id, id)).returning();
+    return result[0];
+  },
+};

@@ -23,7 +23,7 @@ export default function ProductsPage() {
           name={product.name}
           description={product.tagline}
           avatarProps={{
-            src: product.thumbnailUrl,
+            src: product.thumbnailUrl || undefined,
             name: product.name,
             size: 'sm',
           }}
@@ -93,7 +93,7 @@ export default function ProductsPage() {
       render: (product) => (
         <div className="flex items-center gap-2">
           <Link
-            href={product.productHuntUrl}
+            href={product.productHuntUrl || '#'}
             isExternal
             showAnchorIcon
             anchorIcon={<ArrowTopRightOnSquareIcon className="h-3 w-3" />}
@@ -130,12 +130,12 @@ export default function ProductsPage() {
       </div>
       
       <DataTable
-        data={products || []}
+        data={(products || []) as any[]}
         columns={columns}
         loading={isLoading}
         emptyMessage="No products found. Products will appear here once they are scraped from ProductHunt."
         searchPlaceholder="Search products..."
-        onRowAction={(product) => router.push(`/products/${product.id}`)}
+        onRowAction={(key) => router.push(`/products/${key}`)}
         selectionMode="multiple"
         actions={[
           {

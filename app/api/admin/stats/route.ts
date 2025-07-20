@@ -81,8 +81,8 @@ export async function GET(request: NextRequest) {
       totalProducts: productCount.count || 0,
       totalAnalysis: analysisCount.count || 0,
       activeWorkflows: activeWorkflowCount.count || 0,
-      recentExecutions,
-      topProducts,
+      recentExecutions: recentExecutions as any[],
+      topProducts: topProducts as any[],
       analysisBreakdown: {
         byType: analysisByType.reduce((acc, item) => {
           acc[item.analysisType] = item.count

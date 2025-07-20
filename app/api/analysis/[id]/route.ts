@@ -90,7 +90,7 @@ export async function GET(
     const transformedReport = {
       id: report.id,
       title: report.title,
-      content: report.content ? JSON.parse(report.content) : null,
+      content: report.content, // Content is already JSON type, no parsing needed
       productsAnalyzed: report.productsAnalyzed,
       workflowId: report.workflowId,
       analyzedAt: report.analyzedAt,

@@ -59,8 +59,17 @@ export async function POST(request: NextRequest) {
     // Prepare product data for insertion
     const newProduct = {
       name: productData.name,
-      overview: productData.description || productData.tagline,
+      tagline: productData.tagline,
+      description: productData.description || null,
+      url: productData.url,
       productHuntUrl: productData.url,
+      thumbnailUrl: productData.thumbnailUrl || null,
+      votesCount: productData.votesCount || 0,
+      commentsCount: productData.commentsCount || 0,
+      categories: productData.topics || [],
+      tags: productData.topics || [], // Using topics as tags since there's no separate tags field
+      featuredAt: productData.featured ? new Date(productData.createdAt) : null,
+      launchedAt: new Date(productData.createdAt),
       workflowId: workflowId,
       scrapedAt: new Date(productData.createdAt),
     };

@@ -7,19 +7,22 @@
  * Workflow configuration and execution types
  */
 export interface Workflow {
-  id: string;
+  id: number;
   name: string;
-  description?: string;
-  isActive: boolean;
+  type: string; // 'products' | 'analysis'
   webhookUrl: string;
-  configuration: WorkflowConfiguration;
+  isActive: boolean;
+  lastExecuted?: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  // Extended fields for UI/display purposes - these may not exist in DB
+  description?: string;
+  configuration?: WorkflowConfiguration;
 }
 
 export interface WorkflowConfiguration {
-  id: string;
-  workflowId: string;
+  id: number;
+  workflowId: number;
   schedule?: string; // Cron expression
   filters?: {
     minVotes?: number;
@@ -37,48 +40,54 @@ export interface WorkflowConfiguration {
 }
 
 export interface WorkflowExecution {
-  id: string;
-  workflowId: string;
+  id: number;
+  workflowId: number;
   status: 'pending' | 'running' | 'completed' | 'failed';
   startedAt: Date;
-  completedAt?: Date;
-  error?: string;
-  productsProcessed?: number;
-  metadata?: Record<string, any>;
+  completedAt?: Date | null;
+  error?: string | null;
+  productsProcessed?: number | null;
+  metadata?: Record<string, any> | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * Product types from ProductHunt
  */
 export interface Product {
-  id: string;
+  id: number;
   name: string;
   tagline: string;
-  description: string;
+  description?: string | null;
   url: string;
-  productHuntUrl: string;
-  thumbnailUrl?: string;
+  productHuntUrl?: string | null;
+  thumbnailUrl?: string | null;
   votesCount: number;
-  commentsCount?: number;
+  commentsCount?: number | null;
   categories: string[];
   tags: string[];
-  topics?: ProductTopic[];
-  makers?: Maker[];
-  featuredAt?: Date;
-  launchedAt?: Date;
+  featuredAt?: Date | null;
+  launchedAt?: Date | null;
+  workflowId?: number | null;
+  scrapedAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Extended fields for UI/display purposes - these may not exist in DB
+  overview?: string;
+  topics?: ProductTopic[];
+  makers?: Maker[];
   analysisReports?: AnalysisReport[];
 }
 
 export interface ProductTopic {
-  id: string;
+  id: number;
   name: string;
   slug: string;
 }
 
 export interface Maker {
-  id: string;
+  id: number;
   name: string;
   username: string;
   profileUrl?: string;
@@ -90,15 +99,20 @@ export interface Maker {
  * Analysis report types
  */
 export interface AnalysisReport {
-  id: string;
-  productId: string;
-  product?: Product;
-  content: AnalysisContent;
+  id: number;
+  productId: number;
+  title: string;
+  content: AnalysisContent; // Structured analysis data (JSON type in DB)
   analysisType: 'market_fit' | 'competitive' | 'sentiment' | 'comprehensive';
-  confidence: number; // 0-100
+  confidence: number; // 0-100 (decimal in DB)
   version: string;
+  productsAnalyzed: number;
+  workflowId?: number | null;
+  analyzedAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Extended fields for UI/display purposes
+  product?: Product;
 }
 
 /**
@@ -233,8 +247,8 @@ export interface PaginationInfo {
  * Webhook payload types
  */
 export interface WebhookPayload {
-  workflowId: string;
-  executionId: string;
+  workflowId: number;
+  executionId: number;
   timestamp: string;
   event: 'product_discovered' | 'analysis_completed' | 'workflow_completed' | 'workflow_failed';
   data: ProductWebhookData | AnalysisWebhookData | WorkflowWebhookData;
@@ -247,7 +261,7 @@ export interface ProductWebhookData {
 }
 
 export interface AnalysisWebhookData {
-  productId: string;
+  productId: number;
   analysisReport: AnalysisReport;
   triggerType: 'scheduled' | 'manual' | 'webhook';
 }
@@ -279,8 +293,8 @@ export interface ProductFilter {
 }
 
 export interface AnalysisFilter {
-  productId?: string;
-  analysisType?: AnalysisContent['analysisType'];
+  productId?: number;
+  analysisType?: 'market_fit' | 'competitive' | 'sentiment' | 'comprehensive';
   minConfidence?: number;
   dateRange?: DateRange;
   sortBy?: 'confidence' | 'date' | 'product_votes';
@@ -296,7 +310,7 @@ export interface DateRange {
  * User and authentication types
  */
 export interface User {
-  id: string;
+  id: number;
   email: string;
   role: 'admin' | 'viewer';
   metadata?: {

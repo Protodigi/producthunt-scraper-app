@@ -39,7 +39,7 @@ interface DataTableProps<T> {
   emptyMessage?: string
   searchable?: boolean
   searchPlaceholder?: string
-  onRowAction?: (item: T) => void
+  onRowAction?: (key: React.Key) => void
   selectionMode?: 'none' | 'single' | 'multiple'
   onSelectionChange?: (keys: Selection) => void
   actions?: Array<{
@@ -82,7 +82,7 @@ export function DataTable<T extends { id: string }>({
     if (hasSearchFilter) {
       filteredData = filteredData.filter((item) =>
         columns.some((column) => {
-          const value = getKeyValue(item, column.key)
+          const value = getKeyValue(item, column.key as string)
           return value?.toString().toLowerCase().includes(filterValue.toLowerCase())
         })
       )
@@ -256,16 +256,16 @@ export function DataTable<T extends { id: string }>({
       onSortChange={setSortDescriptor}
       onRowAction={onRowAction}
     >
-      <TableHeader columns={columns}>
-        {(column) => (
+      <TableHeader>
+        {columns.map((column) => (
           <TableColumn
-            key={column.key}
+            key={column.key as string}
             align={column.key === 'actions' ? 'center' : 'start'}
             allowsSorting={column.sortable}
           >
             {column.label}
           </TableColumn>
-        )}
+        ))}
       </TableHeader>
       <TableBody
         emptyContent={loading ? <Spinner /> : emptyMessage}

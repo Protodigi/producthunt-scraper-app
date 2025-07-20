@@ -21,14 +21,14 @@ export function WorkflowCard({ workflow, onToggle, onEdit, onDelete, onRun, load
   const handleToggle = async (isSelected: boolean) => {
     setIsToggling(true)
     try {
-      await onToggle(workflow.id, isSelected)
+      await onToggle(String(workflow.id), isSelected)
     } finally {
       setIsToggling(false)
     }
   }
 
   const handleDelete = async () => {
-    await onDelete(workflow.id)
+    await onDelete(String(workflow.id))
     onOpenChange()
   }
 
@@ -65,7 +65,7 @@ export function WorkflowCard({ workflow, onToggle, onEdit, onDelete, onRun, load
                 <DropdownItem
                   key="run"
                   startContent={<PlayIcon className="h-4 w-4" />}
-                  onPress={() => onRun(workflow.id)}
+                  onPress={() => onRun(String(workflow.id))}
                   isDisabled={!workflow.isActive}
                 >
                   Run Now
@@ -94,7 +94,7 @@ export function WorkflowCard({ workflow, onToggle, onEdit, onDelete, onRun, load
         <CardBody className="space-y-3">
           {/* Configuration Details */}
           <div className="space-y-2">
-            {workflow.configuration.schedule && (
+            {workflow.configuration?.schedule && (
               <div className="flex items-center gap-2">
                 <ClockIcon className="h-4 w-4 text-default-400" />
                 <span className="text-small text-default-600">
@@ -103,7 +103,7 @@ export function WorkflowCard({ workflow, onToggle, onEdit, onDelete, onRun, load
               </div>
             )}
             
-            {workflow.configuration.filters && (
+            {workflow.configuration?.filters && (
               <div className="space-y-1">
                 {workflow.configuration.filters.minVotes && (
                   <Chip size="sm" variant="flat">

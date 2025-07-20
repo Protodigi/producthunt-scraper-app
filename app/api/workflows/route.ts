@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { workflows } from '@/lib/db/schema';
+import { desc } from 'drizzle-orm';
 import type { NewWorkflow } from '@/lib/db/schema';
 import { 
   checkAdminAuth, 
@@ -25,7 +26,7 @@ export async function GET() {
     }
 
     // Fetch all workflows
-    const allWorkflows = await db.select().from(workflows).orderBy(workflows.createdAt);
+    const allWorkflows = await db.select().from(workflows).orderBy(desc(workflows.createdAt));
 
     return NextResponse.json({ workflows: allWorkflows });
   } catch (error) {

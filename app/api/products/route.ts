@@ -16,8 +16,17 @@ const getProductsSchema = z.object({
 // Schema for POST request body
 const createProductSchema = z.object({
   name: z.string().min(1),
-  overview: z.string().optional(),
+  tagline: z.string().min(1),
+  description: z.string().optional(),
+  url: z.string().url(),
   productHuntUrl: z.string().url().optional(),
+  thumbnailUrl: z.string().url().optional(),
+  votesCount: z.number().int().min(0).default(0),
+  commentsCount: z.number().int().min(0).optional(),
+  categories: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([]),
+  featuredAt: z.string().datetime().optional(),
+  launchedAt: z.string().datetime().optional(),
   workflowId: z.number().optional(),
   scrapedAt: z.string().datetime().optional(),
 });
@@ -63,31 +72,38 @@ export async function GET(request: NextRequest) {
     }
 
     // Execute query
-    const query = db
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    const result = await db
       .select({
         product: products,
         workflow: workflows,
       })
       .from(products)
       .leftJoin(workflows, eq(products.workflowId, workflows.id))
+      .where(whereClause)
       .orderBy(desc(products.scrapedAt))
       .limit(parseInt(validatedParams.limit))
       .offset(parseInt(validatedParams.offset));
-
-    if (conditions.length > 0) {
-      query.where(and(...conditions));
-    }
-
-    const result = await query;
 
     // Format response
     const formattedProducts = result.map(({ product, workflow }) => ({
       id: product.id,
       name: product.name,
-      overview: product.overview,
+      tagline: product.tagline,
+      description: product.description,
+      url: product.url,
       productHuntUrl: product.productHuntUrl,
+      thumbnailUrl: product.thumbnailUrl,
+      votesCount: product.votesCount,
+      commentsCount: product.commentsCount,
+      categories: product.categories,
+      tags: product.tags,
+      featuredAt: product.featuredAt,
+      launchedAt: product.launchedAt,
       scrapedAt: product.scrapedAt,
       createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
       workflow: workflow ? {
         id: workflow.id,
         name: workflow.name,
@@ -157,8 +173,17 @@ export async function POST(request: NextRequest) {
       .insert(products)
       .values({
         name: validatedData.name,
-        overview: validatedData.overview || null,
+        tagline: validatedData.tagline,
+        description: validatedData.description || null,
+        url: validatedData.url,
         productHuntUrl: validatedData.productHuntUrl || null,
+        thumbnailUrl: validatedData.thumbnailUrl || null,
+        votesCount: validatedData.votesCount,
+        commentsCount: validatedData.commentsCount || null,
+        categories: validatedData.categories,
+        tags: validatedData.tags,
+        featuredAt: validatedData.featuredAt ? new Date(validatedData.featuredAt) : null,
+        launchedAt: validatedData.launchedAt ? new Date(validatedData.launchedAt) : null,
         workflowId: validatedData.workflowId || null,
         scrapedAt: validatedData.scrapedAt ? new Date(validatedData.scrapedAt) : new Date(),
       })

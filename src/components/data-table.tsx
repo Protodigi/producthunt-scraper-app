@@ -11,17 +11,18 @@ import {
   SortDescriptor,
   Spinner,
   Pagination,
-  Input
+  Input,
+  Selection
 } from '@nextui-org/react'
 
-interface Column<T> {
-  key: string
+export interface Column<T> {
+  key: keyof T | string
   label: string
   sortable?: boolean
   render?: (item: T) => React.ReactNode
 }
 
-interface DataTableProps<T> {
+export interface DataTableProps<T> {
   columns: Column<T>[]
   data: T[]
   isLoading?: boolean
@@ -35,8 +36,8 @@ interface DataTableProps<T> {
   onPageChange?: (page: number) => void
   rowsPerPage?: number
   selectionMode?: 'none' | 'single' | 'multiple'
-  selectedKeys?: Set<string>
-  onSelectionChange?: (keys: Set<string>) => void
+  selectedKeys?: Selection
+  onSelectionChange?: (keys: Selection) => void
   emptyContent?: string
   loadingContent?: React.ReactNode
 }
@@ -124,22 +125,18 @@ export function DataTable<T extends { id: string | number }>({
       sortDescriptor={sortDescriptor}
       topContent={topContent}
       topContentPlacement="outside"
-      onSelectionChange={(keys) => {
-        if (onSelectionChange && keys !== 'all') {
-          onSelectionChange(keys as Set<string>)
-        }
-      }}
+      onSelectionChange={onSelectionChange}
       onSortChange={onSortChange}
     >
-      <TableHeader columns={columns}>
-        {(column) => (
+      <TableHeader>
+        {columns.map((column) => (
           <TableColumn
-            key={column.key}
+            key={column.key as string}
             allowsSorting={column.sortable}
           >
             {column.label}
           </TableColumn>
-        )}
+        ))}
       </TableHeader>
       <TableBody
         emptyContent={emptyContent}
@@ -148,7 +145,7 @@ export function DataTable<T extends { id: string | number }>({
         loadingContent={loadingContent || <Spinner />}
       >
         {(item) => (
-          <TableRow key={item.id}>
+          <TableRow key={String(item.id)}>
             {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
           </TableRow>
         )}

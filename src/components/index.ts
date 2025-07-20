@@ -10,3 +10,11 @@ export { LoadingSpinner, LoadingContainer, LoadingSkeleton } from './loading-spi
 export { ErrorBoundary, AsyncErrorBoundary, useErrorHandler } from './error-boundary'
 
 export { Navbar, SubNavbar } from './navbar'
+
+// Re-export shared components for convenience
+export { AnalysisCard } from './shared/AnalysisCard'
+export { WorkflowCard } from './shared/WorkflowCard'
+export { LoadingState } from './shared/LoadingState'
+export { ErrorState } from './shared/ErrorState'
+export { DataTable as SharedDataTable } from './shared/DataTable'
+export type { Column as SharedColumn } from './shared/DataTable'

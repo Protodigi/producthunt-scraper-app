@@ -8,7 +8,14 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const workflowId = params.id
+    const workflowId = parseInt(params.id)
+    
+    if (isNaN(workflowId)) {
+      return NextResponse.json(
+        { error: 'Invalid workflow ID' },
+        { status: 400 }
+      )
+    }
 
     // Get the workflow
     const [workflow] = await db

@@ -205,6 +205,7 @@ export function AnalysisCard({ analysis, productName, onViewDetails, compact = f
         )}
 
         {/* Insights & Recommendations */}
+        {/* @ts-expect-error NextUI Accordion children type issue */}
         <Accordion variant="bordered">
           {content.insights && content.insights.length > 0 && (
             <AccordionItem

@@ -150,11 +150,11 @@ export async function GET(request: NextRequest) {
       .limit(pageSize)
       .offset(offset);
 
-    // Transform the results to parse JSON content
+    // Transform the results - content is already JSON type, no parsing needed
     const transformedReports = reports.map(report => ({
       id: report.id,
       title: report.title,
-      content: report.content ? JSON.parse(report.content) : null,
+      content: report.content,
       productsAnalyzed: report.productsAnalyzed,
       workflowId: report.workflowId,
       analyzedAt: report.analyzedAt,

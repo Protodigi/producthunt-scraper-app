@@ -161,21 +161,23 @@ export async function DELETE(
     }
 
     // Check if workflow has associated products or analysis reports
-    const [relatedProducts] = await db.select({ count: products.id })
+    const relatedProducts = await db.select()
       .from(products)
-      .where(eq(products.workflowId, workflowId));
+      .where(eq(products.workflowId, workflowId))
+      .limit(1);
     
-    const [relatedReports] = await db.select({ count: analysisReports.id })
+    const relatedReports = await db.select()
       .from(analysisReports)
-      .where(eq(analysisReports.workflowId, workflowId));
+      .where(eq(analysisReports.workflowId, workflowId))
+      .limit(1);
 
-    if (relatedProducts?.count || relatedReports?.count) {
+    if (relatedProducts.length > 0 || relatedReports.length > 0) {
       return NextResponse.json(
         { 
           error: 'Cannot delete workflow with existing products or analysis reports. Please delete related data first.',
           details: {
-            productsCount: relatedProducts?.count || 0,
-            reportsCount: relatedReports?.count || 0
+            hasProducts: relatedProducts.length > 0,
+            hasReports: relatedReports.length > 0
           }
         },
         { status: 400 }

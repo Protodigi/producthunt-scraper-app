@@ -7,8 +7,17 @@ import { z } from 'zod';
 // Schema for PUT request body
 const updateProductSchema = z.object({
   name: z.string().min(1).optional(),
-  overview: z.string().optional(),
+  tagline: z.string().min(1).optional(),
+  description: z.string().optional(),
+  url: z.string().url().optional(),
   productHuntUrl: z.string().url().optional(),
+  thumbnailUrl: z.string().url().optional(),
+  votesCount: z.number().int().min(0).optional(),
+  commentsCount: z.number().int().min(0).optional(),
+  categories: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+  featuredAt: z.string().datetime().optional(),
+  launchedAt: z.string().datetime().optional(),
   workflowId: z.number().nullable().optional(),
   scrapedAt: z.string().datetime().optional(),
 });
@@ -68,10 +77,20 @@ export async function GET(
     const formattedProduct = {
       id: product.id,
       name: product.name,
-      overview: product.overview,
+      tagline: product.tagline,
+      description: product.description,
+      url: product.url,
       productHuntUrl: product.productHuntUrl,
+      thumbnailUrl: product.thumbnailUrl,
+      votesCount: product.votesCount,
+      commentsCount: product.commentsCount,
+      categories: product.categories,
+      tags: product.tags,
+      featuredAt: product.featuredAt,
+      launchedAt: product.launchedAt,
       scrapedAt: product.scrapedAt,
       createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
       workflow: workflow ? {
         id: workflow.id,
         name: workflow.name,
@@ -149,10 +168,19 @@ export async function PUT(
     }
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: any = { updatedAt: new Date() };
     if (validatedData.name !== undefined) updateData.name = validatedData.name;
-    if (validatedData.overview !== undefined) updateData.overview = validatedData.overview;
+    if (validatedData.tagline !== undefined) updateData.tagline = validatedData.tagline;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.url !== undefined) updateData.url = validatedData.url;
     if (validatedData.productHuntUrl !== undefined) updateData.productHuntUrl = validatedData.productHuntUrl;
+    if (validatedData.thumbnailUrl !== undefined) updateData.thumbnailUrl = validatedData.thumbnailUrl;
+    if (validatedData.votesCount !== undefined) updateData.votesCount = validatedData.votesCount;
+    if (validatedData.commentsCount !== undefined) updateData.commentsCount = validatedData.commentsCount;
+    if (validatedData.categories !== undefined) updateData.categories = validatedData.categories;
+    if (validatedData.tags !== undefined) updateData.tags = validatedData.tags;
+    if (validatedData.featuredAt !== undefined) updateData.featuredAt = validatedData.featuredAt ? new Date(validatedData.featuredAt) : null;
+    if (validatedData.launchedAt !== undefined) updateData.launchedAt = validatedData.launchedAt ? new Date(validatedData.launchedAt) : null;
     if (validatedData.workflowId !== undefined) updateData.workflowId = validatedData.workflowId;
     if (validatedData.scrapedAt !== undefined) updateData.scrapedAt = new Date(validatedData.scrapedAt);
 

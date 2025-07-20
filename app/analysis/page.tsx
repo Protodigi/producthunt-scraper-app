@@ -20,7 +20,14 @@ export default function AnalysisPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Get unique analysis types from the data
-  const analysisTypes = analyses ? [...new Set(analyses.map(a => a.analysisType))] : []
+  const analysisTypes = analyses ? Array.from(new Set(analyses.map(a => a.analysisType))) : []
+  
+  // Create select items for analysis types
+  const analysisTypeItems = analysisTypes.map((type: string) => (
+    <SelectItem key={type} value={type}>
+      {type.replace('_', ' ')}
+    </SelectItem>
+  ))
 
   // Filter analyses based on search and filters
   const filteredAnalyses = analyses?.filter(analysis => {
@@ -84,11 +91,10 @@ export default function AnalysisPage() {
               className="md:w-48"
             >
               <SelectItem key="all" value="all">All types</SelectItem>
-              {analysisTypes.map(type => (
-                <SelectItem key={type} value={type}>
-                  {type.replace('_', ' ')}
-                </SelectItem>
-              ))}
+              <SelectItem key="market_fit" value="market_fit">Market Fit</SelectItem>
+              <SelectItem key="competitive" value="competitive">Competitive</SelectItem>
+              <SelectItem key="sentiment" value="sentiment">Sentiment</SelectItem>
+              <SelectItem key="comprehensive" value="comprehensive">Comprehensive</SelectItem>
             </Select>
             
             <Select
