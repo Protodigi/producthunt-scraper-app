@@ -1,6 +1,6 @@
-# ProductHunt Scraper App
+# ProductHunt Analyzer
 
-A web application that receives ProductHunt product data via webhooks from n8n workflows, stores it, and displays analysis results.
+A Next.js web application that visualizes scraped ProductHunt data received from n8n workflows via webhooks. The application provides three main interfaces: Products display, AI Analysis reports, and Admin workflow management.
 
 ## Features
 
@@ -32,7 +32,7 @@ A web application that receives ProductHunt product data via webhooks from n8n w
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/yourusername/producthunt-scraper-app.git
+git clone https://github.com/Protodigi/producthunt-scraper-app.git
 cd producthunt-scraper-app
 npm install
 ```
@@ -113,24 +113,19 @@ src/
 
 Configure your n8n workflow to send product data to:
 ```
-POST https://your-app.railway.app/api/webhooks/products
+POST https://your-app.railway.app/api/webhook/products
 ```
 
-Expected payload format:
+Expected payload format (matches your n8n workflow):
 ```json
 {
   "workflowId": 1,
   "products": [
     {
-      "id": "product-123",
-      "name": "Product Name",
-      "tagline": "Product tagline",
-      "description": "Product description",
-      "url": "https://producthunt.com/posts/example",
-      "votesCount": 100,
-      "commentsCount": 20,
-      "featured": true,
-      "categories": ["productivity", "developer-tools"]
+      "name": "AI Photo Editor Pro",
+      "overview": "Revolutionary AI-powered photo editing tool that transforms your images with just one click",
+      "url": "https://www.producthunt.com/posts/ai-photo-editor-pro",
+      "scrapedAt": "2025-01-20T09:00:00.000Z"
     }
   ]
 }
@@ -140,18 +135,17 @@ Expected payload format:
 
 Configure your n8n workflow to send analysis data to:
 ```
-POST https://your-app.railway.app/api/webhooks/analysis
+POST https://your-app.railway.app/api/webhook/analysis
 ```
 
-Expected payload format:
+Expected payload format (matches your n8n workflow):
 ```json
 {
-  "workflowId": 2,
-  "analysisType": "comprehensive",
-  "results": {
-    "summary": "Analysis summary...",
-    "insights": [...],
-    "metrics": {...}
+  "workflowId": 1,
+  "analysis": {
+    "content": "## Individual Product Analysis:\n\n• **AI Photo Editor Pro**: This tool represents the growing trend of AI-powered creative applications...",
+    "analysisDate": "2025-01-20T09:00:00.000Z",
+    "productCount": 3
   }
 }
 ```
